@@ -1,3 +1,12 @@
+/*******************************************************************************
+*                            Circle Watch v1.0                                 *
+*                                                                              *
+* Programmed by Miguel Branco (http://www.epicvortex.com)                      *
+*                                                                              *
+* Based on Polar Clock by op12 and Segment Six by Pebble Technology            *
+*                                                                              *
+*******************************************************************************/
+
 #include "pebble_os.h"
 #include "pebble_app.h"
 #include "pebble_fonts.h"
@@ -21,12 +30,22 @@ const GPathInfo RING_SEGMENT_PATH_POINTS = {
 	3,
 	(GPoint []) {
 		{0, 0},
-		{-8, -75}, // 75 = radius + fudge; 8 = 75*tan(6 degrees); 6 degrees per minute;
-		{8,  -75},
+		{0, -75}, // 75 = radius + slack; 12 = needed to fill space before next segment
+		{12,  -75},
+	}
+};
+
+const GPathInfo LAST_SEGMENT_PATH_POINTS = {
+	3,
+	(GPoint []) {
+		{0, 0},
+		{-7, -75}, // 75 = radius + slack; 12 = needed to fill space before next segment
+		{1,  -75},
 	}
 };
 
 GPath ring_segment_path;
+GPath last_segment_path;
 
 void ring_display_layer_update_callback(Layer *me, GContext* ctx) {
 	PblTm t;
@@ -37,10 +56,13 @@ void ring_display_layer_update_callback(Layer *me, GContext* ctx) {
 	graphics_fill_circle(ctx, center, 70);
 	graphics_context_set_fill_color(ctx, GColorBlack);
 
-	for(; angle < 355; angle += 6) {
+	// Cover up the minutes yet to come
+	for(; angle < 354; angle += 6) {
 		gpath_rotate_to(&ring_segment_path, (TRIG_MAX_ANGLE / 360) * angle);
 		gpath_draw_filled(ctx, &ring_segment_path);
 	}
+	// Exact cover for the last minute so the hour begins at the right position
+	gpath_draw_filled(ctx, &last_segment_path);
 
 	graphics_fill_circle(ctx, center, 60);
 }
@@ -101,6 +123,10 @@ void handle_init(AppContextRef ctx) {
 	// Init the ring segment path
 	gpath_init(&ring_segment_path, &RING_SEGMENT_PATH_POINTS);
 	gpath_move_to(&ring_segment_path, grect_center_point(&ring_display_layer.frame));
+	
+	// Init the last segment path
+	gpath_init(&last_segment_path, &LAST_SEGMENT_PATH_POINTS);
+	gpath_move_to(&last_segment_path, grect_center_point(&ring_display_layer.frame));
 
 	text_layer_init(&text_time_layer, window.layer.frame);
 	text_layer_set_text_color(&text_time_layer, GColorWhite);
