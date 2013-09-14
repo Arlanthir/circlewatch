@@ -128,16 +128,21 @@ void handle_init(AppContextRef ctx) {
 	gpath_init(&last_segment_path, &LAST_SEGMENT_PATH_POINTS);
 	gpath_move_to(&last_segment_path, grect_center_point(&ring_display_layer.frame));
 
+	// Time Layer
 	text_layer_init(&text_time_layer, window.layer.frame);
 	text_layer_set_text_color(&text_time_layer, GColorWhite);
 	text_layer_set_background_color(&text_time_layer, GColorClear);
-
+	
 	layer_set_frame(&text_time_layer.layer, GRect(0, 57, 144, 168-57));
 	text_layer_set_text_alignment(&text_time_layer, GTextAlignmentCenter);
 
-	text_layer_set_font(&text_time_layer, fonts_get_system_font(FONT_KEY_GOTHAM_42_BOLD));
+	text_layer_set_font(&text_time_layer, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
 	layer_add_child(&window.layer, &text_time_layer.layer);
+	// This seems to be required on SDK>1.12 - Don't know why
+	text_layer_set_text_color(&text_time_layer, GColorWhite);
+	text_layer_set_background_color(&text_time_layer, GColorClear);
 
+	// Date Layer
 	text_layer_init(&text_date_layer, window.layer.frame);
 	text_layer_set_text_color(&text_date_layer, GColorWhite);
 	text_layer_set_background_color(&text_date_layer, GColorClear);
